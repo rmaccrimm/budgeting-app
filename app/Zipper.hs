@@ -1,27 +1,33 @@
 module Zipper
 where
 
-data Tree a = Leaf a
-            | Fork (Tree a) (Tree a)
-  deriving (Show)
+data Tree a = Node a [Tree a]
+  deriving (Show, Eq)
 
-data Context a = Root
-               | LeftChild (Tree a) (Context a)
-               | RightChild (Tree a) (Context a)
-  deriving (Show)
+data Path a = Root
+            | Path a [Tree a] (Path a) [Tree a]
+  deriving (Show, Eq)
 
-newtype Location a = Location (Tree a, Context a)
-  deriving (Show)
+newtype Location a = Location (Tree a, Path a)
+  deriving (Show, Eq)
 
-left :: Location a -> Location a
-left (Location (Fork l r, context)) = Location (l, LeftChild r context)
-left leaf                           = leaf
+-- Shift focus to first left sibling 
+goLeft :: Location a -> Location a
+goLeft loc@(Location (_, Root)) = loc
+goLeft loc@(Location (_, Path _ [] _ _)) = loc
+goLeft (Location (t, Path a (l:ls) parent rs)) = Location (l, Path a ls parent (t:rs))
 
-right :: Location a -> Location a
-right (Location (Fork l r, context)) = Location (r, RightChild l context)
-right leaf                           = leaf
+-- Shift focus to first left sibling 
+goRight :: Location a -> Location a
+goRight loc@(Location (_, Root)) = loc
+goRight loc@(Location (t, Path _ _ _ [])) = loc
+goRight (Location (t, Path a ls parent (r:rs))) = Location (r, Path a (t:ls) parent rs)
 
-up :: Location a -> Location a
-up (Location (t, Root))           = Location (t, Root)
-up (Location (t, LeftChild r c))  = Location (Fork t r, c)
-up (Location (t, RightChild l c)) = Location (Fork l t, c)
+goDown :: Location a -> Location a
+goDown loc@(Location (Node _ [], _)) = loc
+goDown (Location (Node a (c:cs), path)) = Location(c, Path a [] path cs)
+
+goUp :: Location a -> Location a
+goUp loc@(Location (_, Root)) = loc
+goUp (Location (t, Path a ls parent rs)) = Location (Node a (reverse ls ++ (t:rs)), parent)
+
