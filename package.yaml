@@ -25,7 +25,8 @@ dependencies:
 executables:
   BudgetApp-exe:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:
+      - app
     ghc-options:
       - -threaded
       - -rtsopts

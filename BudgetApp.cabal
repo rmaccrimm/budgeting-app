@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 94cc633b11c64e5bf5da1611ab40e4e273b477adc8cf4b718ac05d9f476b4482
+-- hash: c82004e6db53421ea37ea643100d9161b46bdfb95a50236a35762246e0d78e25
 
 name:           BudgetApp
 version:        0.1.0.0
@@ -28,7 +28,8 @@ source-repository head
 executable BudgetApp-exe
   main-is: Main.hs
   other-modules:
-      Zipper
+      Data.Zipper
+      UI.Categories
       Paths_BudgetApp
   hs-source-dirs:
       app
