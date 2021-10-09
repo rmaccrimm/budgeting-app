@@ -2,6 +2,7 @@
 module UI.Categories where
 
 import Data.Zipper
+import Control.Lens.Operators
 
 import Brick (App, AttrMap, BrickEvent (VtyEvent), Widget, attrMap, on, simpleMain, str, vBox,
               withBorderStyle, (<+>))
@@ -28,28 +29,30 @@ renderString selected s = if selected
 -- Only the root node of the tree is rendered since we want the tree to collapse as we walk back up
 -- towards the root
 renderTree :: Int -> Bool -> Tree String -> Widget ()
-renderTree lvl selected (Node x children) = renderString selected (spaces (2 * lvl) ++ symbol ++ x)
-  where symbol = case children of
+renderTree lvl selected t = renderString selected (spaces (2 * lvl) ++ symbol ++ t ^. label)
+  where symbol = case t ^. children of
           [] -> "- "
           _  -> "+ "
 
 -- Render a context in two parts - before and after the focused subtree
-renderContext :: Int -> Context String -> (Widget (), Widget ())
-renderContext _ Root = (vBox [], vBox [])
-renderContext lvl (Context val ls p rs) = (vBox $ before : paddedVal : rls, vBox $ rrs ++ [after])
-  where paddedVal = str (spaces (2 * (lvl - 1)) ++ "o " ++ val)
-        rls = map (renderTree lvl False) (reverse ls)
-        rrs = map (renderTree lvl False) rs
-        (before, after) = renderContext (lvl - 1) p
+renderContext :: Int -> Maybe (Context String) -> (Widget (), Widget ())
+renderContext lvl mCtx = case mCtx of
+  Nothing -> (vBox [], vBox [])
+  Just ctx -> (vBox $ before : paddedVal : rls, vBox $ rrs ++ [after])
+    where paddedVal = str (spaces (2 * (lvl - 1)) ++ "o " ++ (ctx ^. pLabel))
+          rls = map (renderTree lvl False) (reverse (ctx ^. lSiblings))
+          rrs = map (renderTree lvl False) (ctx ^. rSiblings)
+          (before, after) = renderContext (lvl - 1) (ctx ^. pContext)
 
 
-getLevel :: Context String -> Int
-getLevel Root           = 0
-getLevel (Context _ _ p _) = 1 + getLevel p
+getLevel :: Maybe (Context String) -> Int
+getLevel Nothing = 0
+getLevel (Just ctx) = 1 + getLevel (ctx ^. pContext)
 
 
 renderLocation :: Location String -> [Widget ()]
-renderLocation (Location (t, Root)) = [renderTree 0 True t]
-renderLocation (Location (t, p))  = [vBox [before, renderTree lvl True t, after]]
-  where lvl = getLevel p
-        (before, after) = renderContext lvl p
+renderLocation loc = case loc ^. context of
+  Nothing  -> [renderTree 0 True (loc ^. focus)]
+  Just ctx -> [vBox [before, renderTree lvl True (loc ^. focus), after]]
+    where lvl = getLevel (loc ^. context)
+          (before, after) = renderContext lvl (loc ^. context)

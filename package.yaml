@@ -35,6 +35,7 @@ executables:
       - brick
       - vector
       - vty
+      - lens
 
       
 tests:

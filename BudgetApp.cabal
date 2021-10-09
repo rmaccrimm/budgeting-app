@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c82004e6db53421ea37ea643100d9161b46bdfb95a50236a35762246e0d78e25
+-- hash: a804e18a4c597814eab3a0169b623711607d1d2c815867e11206082d468b4207
 
 name:           BudgetApp
 version:        0.1.0.0
@@ -37,6 +37,7 @@ executable BudgetApp-exe
   build-depends:
       base >=4.7 && <5
     , brick
+    , lens
     , vector
     , vty
   default-language: Haskell2010

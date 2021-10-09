@@ -18,26 +18,6 @@ import Graphics.Vty (Attr, black, cyan, white, yellow)
 import qualified Graphics.Vty as V
 
 
-testTree = Node "Categories"
-             [ Node "bills"
-               [ Node "phone" []
-               , Node "rent" []
-               ]
-             , Node "toplevel"
-               [ Node "a" []
-               ]
-             , Node "expenses"
-               [ Node "fun"
-                 [ Node "eating out" []
-                 , Node "games" []
-                 ]
-               , Node "necessities" []
-               ]
-             ]
-
-testLoc = Location (testTree, Root)
-
-
 attrs :: AttrMap
 attrs = attrMap (white `on` black ) [("highlighted", black `on` cyan)]
 
