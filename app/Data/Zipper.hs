@@ -97,12 +97,6 @@ deleteTree loc = case loc ^. context of
                                  & context ?~ ( ctx & lSiblings .~ ls
                                                     & rSiblings .~ rs )
 
--- deleteTree loc@(Location (_, Root))                   = loc
--- deleteTree (Location (t, Context a [] parent []))     = Location (Node a [], parent)
--- deleteTree (Location (t, Context a (l:ls) parent [])) = Location (l, Context a ls parent [])
--- deleteTree (Location (t, Context a ls parent (r:rs))) = Location(r, Context a ls parent rs)
-
-
 testTree :: Tree String
 testTree
   = Node { _label = "Categories"

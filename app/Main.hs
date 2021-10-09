@@ -22,9 +22,9 @@ attrs :: AttrMap
 attrs = attrMap (white `on` black ) [("highlighted", black `on` cyan)]
 
 
-handleEvent :: Location String
+handleEvent :: Location Category
   -> BrickEvent () e
-  -> EventM () (Next (Location String))
+  -> EventM () (Next (Location Category))
 handleEvent loc evt = case evt of
   (VtyEvent (V.EvKey (V.KChar 'q') [])) -> halt loc
   (VtyEvent (V.EvKey V.KEsc []))        -> halt loc
@@ -32,12 +32,12 @@ handleEvent loc evt = case evt of
   (VtyEvent (V.EvKey V.KDown  []))      -> continue $ goRight loc
   (VtyEvent (V.EvKey V.KRight []))      -> continue $ goDown loc
   (VtyEvent (V.EvKey V.KLeft []))       -> continue $ goUp loc
-  (VtyEvent (V.EvKey V.KEnter []))      -> continue $ addChild "new" loc
+  (VtyEvent (V.EvKey V.KEnter []))      -> continue $ addChild (Category 1 "new") loc
   (VtyEvent (V.EvKey V.KDel []))        -> continue $ deleteTree loc
   _                                     -> continue loc
 
 
-app :: App (Location String) e ()
+app :: App (Location Category) e ()
 app =
     App { appDraw = renderLocation
         , appHandleEvent = handleEvent
@@ -46,10 +46,16 @@ app =
         , appChooseCursor = neverShowCursor
         }
 
+rootLocation = Location { _focus = Node { _label = Category 0 "Categories"
+                                        , _children = []
+                                        }
+                        , _context = Nothing
+                        }
+
 
 main :: IO ()
 main =
-  let initialSt = (goDown . goDown . goRight . goRight . goDown) testLoc
+  let initialSt = rootLocation
    in do
     fSt <- defaultMain app initialSt
     return ()

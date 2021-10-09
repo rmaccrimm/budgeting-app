@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module UI.Categories where
 
 import Data.Zipper
 import Control.Lens.Operators
+import Control.Lens.TH
 
 import Brick (App, AttrMap, BrickEvent (VtyEvent), Widget, attrMap, on, simpleMain, str, vBox,
               withBorderStyle, (<+>))
@@ -16,6 +18,11 @@ import Brick.Widgets.List (GenericList (listSelected), handleListEvent, list, re
 import Graphics.Vty (Attr, black, cyan, white, yellow)
 import qualified Graphics.Vty as V
 
+data Category = Category { _id :: Int, _name :: String }
+  deriving (Show, Eq)
+makeLenses ''Category
+
+
 spaces :: Int -> String
 spaces n  = [' ' | _ <- [1..n]]
 
@@ -28,29 +35,29 @@ renderString selected s = if selected
 
 -- Only the root node of the tree is rendered since we want the tree to collapse as we walk back up
 -- towards the root
-renderTree :: Int -> Bool -> Tree String -> Widget ()
-renderTree lvl selected t = renderString selected (spaces (2 * lvl) ++ symbol ++ t ^. label)
+renderTree :: Int -> Bool -> Tree Category -> Widget ()
+renderTree lvl selected t = renderString selected (spaces (2 * lvl) ++ symbol ++ t ^. label . name)
   where symbol = case t ^. children of
           [] -> "- "
           _  -> "+ "
 
 -- Render a context in two parts - before and after the focused subtree
-renderContext :: Int -> Maybe (Context String) -> (Widget (), Widget ())
+renderContext :: Int -> Maybe (Context Category) -> (Widget (), Widget ())
 renderContext lvl mCtx = case mCtx of
   Nothing -> (vBox [], vBox [])
   Just ctx -> (vBox $ before : paddedVal : rls, vBox $ rrs ++ [after])
-    where paddedVal = str (spaces (2 * (lvl - 1)) ++ "o " ++ (ctx ^. pLabel))
+    where paddedVal = str (spaces (2 * (lvl - 1)) ++ "o " ++ (ctx ^. pLabel . name))
           rls = map (renderTree lvl False) (reverse (ctx ^. lSiblings))
           rrs = map (renderTree lvl False) (ctx ^. rSiblings)
           (before, after) = renderContext (lvl - 1) (ctx ^. pContext)
 
 
-getLevel :: Maybe (Context String) -> Int
+getLevel :: Maybe (Context Category) -> Int
 getLevel Nothing = 0
 getLevel (Just ctx) = 1 + getLevel (ctx ^. pContext)
 
 
-renderLocation :: Location String -> [Widget ()]
+renderLocation :: Location Category -> [Widget ()]
 renderLocation loc = case loc ^. context of
   Nothing  -> [renderTree 0 True (loc ^. focus)]
   Just ctx -> [vBox [before, renderTree lvl True (loc ^. focus), after]]
