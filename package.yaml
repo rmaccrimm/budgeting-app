@@ -36,6 +36,7 @@ executables:
       - vector
       - vty
       - lens
+      - text
 
       
 tests:

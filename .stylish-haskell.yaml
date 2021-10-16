@@ -62,7 +62,7 @@ steps:
   #     # Possible values:
   #     # - "same_line" -- leave "=" AND data constructor on the same line as the type constructor.
   #     # - "indent N" -- insert a new line and N spaces from the beginning of the next line.
-      equals: "same_line"
+      equals: "indent 2"
   #
   #     # How to format first field of each record constructor.
   #     # Possible values:
@@ -134,7 +134,7 @@ steps:
       # - none: Do not perform any alignment.
       #
       # default: global.
-      align: none
+      align: group
 
       # The following options affect only import list alignment.
       #
@@ -216,7 +216,7 @@ steps:
       #   >     )
       #
       # Default: inline
-      long_list_align: inline
+      long_list_align: multiline
 
       # Align empty list (importing instances)
       #
