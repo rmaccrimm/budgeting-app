@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5ef516a24f9c4215611ebad5ec12971223b1aa04c95173fd0bdb984935525861
+-- hash: 0f7751def5c818c203e5ea83656116490f35afaa5387c192ace0e68edfdad2e4
 
 name:           BudgetApp
 version:        0.1.0.0
@@ -28,18 +28,21 @@ source-repository head
 executable BudgetApp-exe
   main-is: Main.hs
   other-modules:
+      Category.IO
+      Category.State
+      Category.UI
       Data.Zipper
-      UI.Categories
       Paths_BudgetApp
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base >=4.7 && <5
     , brick
-    , lens
+    , microlens
+    , microlens-th
+    , sqlite-simple
     , text
-    , vector
     , vty
   default-language: Haskell2010
 

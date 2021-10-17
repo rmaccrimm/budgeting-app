@@ -3,33 +3,35 @@
 module Data.Zipper
 where
 
-import Control.Lens.At
-import Control.Lens.Operators
-import Control.Lens.Prism
-import Control.Lens.TH
+import Lens.Micro
+import Lens.Micro.TH
 
 
-data Tree a = Node { _label    :: a
-                   , _children :: [Tree a]
-                   }
+data Tree a = Node
+  { _label    :: a
+  , _children :: [Tree a]
+  }
   deriving (Eq, Show)
+
+
+data Context a = Context
+  { _pLabel    :: a
+  , _pContext  :: Maybe (Context a)
+  , _lSiblings :: [Tree a]
+  , _rSiblings :: [Tree a]
+  }
+  deriving (Eq, Show)
+
+
+data Location a = Location
+  { _focus   :: Tree a
+  , _context :: Maybe (Context a)
+  }
+  deriving (Eq, Show)
+
+
 makeLenses ''Tree
-
-
-data Context a = Context { _pLabel    :: a
-                         , _pContext  :: Maybe (Context a)
-                         , _lSiblings :: [Tree a]
-                         , _rSiblings :: [Tree a]
-                         }
-  deriving (Eq, Show)
 makeLenses ''Context
-
-
-
-data Location a = Location { _focus   :: Tree a
-                           , _context :: Maybe (Context a)
-                           }
-  deriving (Eq, Show)
 makeLenses ''Location
 
 
@@ -85,6 +87,7 @@ addChild newVal loc = loc & focus .~ Node {_label = newVal, _children = [] }
                        , _rSiblings = []
                        }
 
+
 deleteTree :: Location a -> Location a
 deleteTree loc = case loc ^. context of
   Nothing  -> loc
@@ -92,35 +95,12 @@ deleteTree loc = case loc ^. context of
     ([], [])   -> loc & focus .~ Node { _label = ctx ^. pLabel, _children = []}
                       & context .~ (ctx ^. pContext)
     (l:ls, []) -> loc' l ls []
-    (ls, r:rs) -> loc' r [] rs
+    (_, r:rs)  -> loc' r [] rs
     where loc' = \f ls rs -> loc & focus .~ f
                                  & context ?~ ( ctx & lSiblings .~ ls
                                                     & rSiblings .~ rs )
 
-testTree :: Tree String
-testTree
-  = Node { _label = "Categories"
-         , _children = [ Node { _label = "bills"
-                              , _children = [ Node { _label = "phone"
-                                                   , _children = [] }
-                                            , Node { _label = "rent"
-                                                   , _children = [] }
-                                            ]}
-                       , Node { _label = "toplevel"
-                              , _children = [ Node { _label = "a"
-                                                   , _children = [] }
-                                            ]}
-                       , Node { _label = "expenses"
-                              , _children = [ Node { _label = "fun"
-                                                   , _children = [ Node { _label="eating out"
-                                                                        , _children=[]}
-                                                                 , Node { _label="games"
-                                                                        , _children=[]}
-                                                                 ]}
-                                            , Node { _label="necessities"
-                                                   , _children=[]}
-                                            ]}
-                       ]
-         }
 
-testLoc = Location { _focus=testTree, _context=Nothing }
+getLevel :: Maybe (Context e) -> Int
+getLevel Nothing    = 0
+getLevel (Just ctx) = 1 + getLevel (ctx ^. pContext)

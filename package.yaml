@@ -31,12 +31,14 @@ executables:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+      - -Wall
     dependencies:
       - brick
-      - vector
       - vty
-      - lens
+      - microlens
+      - microlens-th
       - text
+      - sqlite-simple
 
       
 tests:
